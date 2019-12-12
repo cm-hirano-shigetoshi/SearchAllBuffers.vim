@@ -12,6 +12,9 @@ function! SearchAllBuffers#Core(word)
     let temp = tempname()
     let orig_buf_idx = bufnr("%")
     for i in range(1, bufnr("$"))
+        if !bufloaded(i)
+            continue
+        endif
         let buf_name = bufname(i)
         if strlen(buf_name) == 0
             let buf_name = "[No Name]"
