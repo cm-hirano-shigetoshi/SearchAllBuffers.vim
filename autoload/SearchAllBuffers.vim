@@ -12,7 +12,7 @@ function! SearchAllBuffers#Core(word)
     let temp = tempname()
     let orig_buf_idx = bufnr("%")
     for i in range(1, bufnr("$"))
-        if !bufloaded(i)
+        if !buflisted(i)
             continue
         endif
         let buf_name = bufname(i)
