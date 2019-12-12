@@ -7,7 +7,8 @@ let s:fzfyml = "fzfyml run"
 let s:tool_dir = expand("<sfile>:p:h")
 let s:yaml = s:tool_dir . "/SearchAllBuffers.yml"
 
-function! SearchAllBuffers#SearchAllBuffers(word)
+
+function! SearchAllBuffers#Core(word)
     let temp = tempname()
     let orig_buf_idx = bufnr("%")
     for i in range(1, bufnr("$"))
@@ -29,6 +30,24 @@ function! SearchAllBuffers#SearchAllBuffers(word)
         call execute(orig_buf_idx . ".buffer")
     endif
 endfunction
+
+function! SearchAllBuffers#Search()
+    call SearchAllBuffers#Core("")
+endfunction
+
+function! SearchAllBuffers#ThisWord()
+    let word = expand('<cword>')
+    call SearchAllBuffers#Core(word)
+endfunction
+
+function! SearchAllBuffers#SelectedWord()
+    let tmp = @@
+    silent normal gvy
+    let word = @@
+    let @@ = tmp
+    call SearchAllBuffers#Core(word)
+endfunction
+
 
 let &cpo = s:save_cpo
 unlet s:save_cpo

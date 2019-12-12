@@ -5,6 +5,6 @@ base_task:
         - delimiter=':'
         - with-nth=2..
         - height=9999
-    query: "{arg2}"
+    query: "{arg2} "
     preview: bash {tooldir}/preview/show_arround_line.sh {2} {3} $LINES
 
