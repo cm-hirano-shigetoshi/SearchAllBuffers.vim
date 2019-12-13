@@ -9,5 +9,8 @@ base_task:
         - no-sort
         - height=9999
     query: "{arg2} "
-    preview: bash {tooldir}/preview/show_arround_line.sh {2} {3} $LINES
+    preview: cat {arg1}
+               | sed -e 's/://1' -e 's/://1'
+               | sed 's/^[^:]\\\\+://'
+               | bash {tooldir}/preview/show_arround_line.sh - {index} $LINES
 
