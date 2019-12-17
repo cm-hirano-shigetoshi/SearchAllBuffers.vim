@@ -8,8 +8,8 @@ base_task:
         - reverse
         - no-sort
         - height=9999
-    query: "{arg2} "
-    preview: cat {arg1}
+    query: "{arg3} "
+    preview: cat {arg2}
                | sed -e 's/://1' -e 's/://1'
                | sed 's/^[^:]\\\\+://'
                | bash {tooldir}/preview/show_arround_line.sh - {index} $LINES
