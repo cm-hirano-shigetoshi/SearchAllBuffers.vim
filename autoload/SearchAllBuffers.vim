@@ -11,6 +11,13 @@ function! SearchAllBuffers#Core(word)
     let orig_buf = bufnr('%')
     let buf_n = bufnr('$')
     enew
+    let temp_buf = buf_n + 1
+    while 1
+        if buflisted(temp_buf)
+            break
+        endif
+        let temp_buf += 1
+    endwhile
     for i in range(buf_n, 1, -1)
         if !buflisted(i)
             continue
@@ -22,14 +29,14 @@ function! SearchAllBuffers#Core(word)
         let buf_name = i . ":" . buf_name . ":"
         call execute(i . "buffer")
         let lines = map(getline(1, '$'),  {idx, val -> buf_name . idx . ":" . val})
-        call appendbufline(buf_n + 1, 0, lines)
+        call appendbufline(temp_buf, 0, lines)
     endfor
-    call execute(buf_n + 1 . "buffer")
+    call execute(temp_buf . "buffer")
     let temp_file = tempname()
     let temp_pipe = temp_file . 'p'
     call execute("w! !cat | tee " . temp_file . " > " . temp_pipe . " &")
     let out = system("tput cnorm > /dev/tty; " . s:fzfyml . " " . s:yaml . " " . temp_pipe . " " . temp_file . " '" . a:word . "' 2>/dev/tty")
-    call execute("bwipeout! " . bufnr('%'))
+    call execute("bwipeout! " . temp_buf)
     if len(out) > 0
         for f in split(out, "\n")
             let file_line = split(f, ":")
