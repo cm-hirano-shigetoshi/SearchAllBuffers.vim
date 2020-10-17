@@ -1,10 +1,16 @@
 base_task:
     input: cat {arg1}
+    transform: sed 's/^[0-9]\+://'
+                 | python {tooldir}/main/partial_transform.py -F ':' 1
+                     'python {ymldir}/norm_path.py --root .'
     opts:
-        - reverse
         - delimiter=':'
-        - with-nth=2..
+        - reverse
+        - no-sort
         - height=9999
-    query: "{arg2}"
-    preview: bash {tooldir}/preview/show_arround_line.sh {2} {3} $LINES
+    query: "{arg3} "
+    preview: cat {arg2}
+               | sed -e 's/://1' -e 's/://1'
+               | sed 's/^[^:]\\\\+://'
+               | bash {tooldir}/preview/show_arround_line.sh - {index} $LINES
 
