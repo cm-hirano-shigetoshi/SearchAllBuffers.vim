@@ -8,15 +8,15 @@ let s:tool_dir = expand("<sfile>:p:h")
 let s:yaml = s:tool_dir . "/SearchAllBuffers.yml"
 
 function! SearchAllBuffers#Core(word)
-    let orig_buf = bufnr('%')
+    let s:orig_buf = bufnr('%')
     let buf_n = bufnr('$')
     enew
-    let temp_buf = buf_n + 1
+    let s:temp_buf = buf_n + 1
     while 1
-        if buflisted(temp_buf)
+        if buflisted(s:temp_buf)
             break
         endif
-        let temp_buf += 1
+        let s:temp_buf += 1
     endwhile
     for i in range(buf_n, 1, -1)
         if !buflisted(i)
@@ -29,21 +29,44 @@ function! SearchAllBuffers#Core(word)
         let buf_name = i . ":" . buf_name . ":"
         call execute(i . "buffer")
         let lines = map(getline(1, '$'),  {idx, val -> buf_name . idx . ":" . val})
-        call appendbufline(temp_buf, 0, lines)
+        call appendbufline(s:temp_buf, 0, lines)
     endfor
-    call execute(temp_buf . "buffer")
+    call execute(s:temp_buf . "buffer")
     let temp_file = tempname()
     let temp_pipe = temp_file . 'p'
     call execute("w! !cat | tee " . temp_file . " > " . temp_pipe . " &")
-    let out = system("tput cnorm > /dev/tty; " . s:fzfyml . " " . s:yaml . " " . temp_pipe . " " . temp_file . " '" . a:word . "' 2>/dev/tty")
-    call execute("bwipeout! " . temp_buf)
-    if len(out) > 0
-        for f in split(out, "\n")
-            let file_line = split(f, ":")
-            call execute(file_line[0] . ".buffer | normal " . file_line[2] . "ggzz")
-        endfor
+    if has('nvim')
+        let s:tmpfile = tempname()
+        function! OnFzfExit(job_id, data, event)
+            bd!
+            call execute("bwipeout! " . s:temp_buf)
+            let lines = readfile(s:tmpfile)
+            if len(lines) > 0
+                for f in lines
+                    let file_line = split(f, ":")
+                    call execute(file_line[0] . ".buffer | normal " . file_line[2] . "ggzz")
+                endfor
+            else
+                call execute(s:orig_buf . "buffer")
+            endif
+        endfunction
+        call delete(s:tmpfile)
+        enew
+        setlocal statusline=fzf
+        setlocal nonumber
+        call termopen(s:fzfyml . " " . s:yaml . " " . temp_pipe . " " . temp_file . " '" . a:word . "' > " . s:tmpfile, {'on_exit': 'OnFzfExit'})
+        startinsert
     else
-        call execute(orig_buf . "buffer")
+        let out = system("tput cnorm > /dev/tty; " . s:fzfyml . " " . s:yaml . " " . temp_pipe . " " . temp_file . " '" . a:word . "' 2>/dev/tty")
+        call execute("bwipeout! " . s:temp_buf)
+        if len(out) > 0
+            for f in split(out, "\n")
+                let file_line = split(f, ":")
+                call execute(file_line[0] . ".buffer | normal " . file_line[2] . "ggzz")
+            endfor
+        else
+            call execute(s:orig_buf . "buffer")
+        endif
     endif
 endfunction
 
