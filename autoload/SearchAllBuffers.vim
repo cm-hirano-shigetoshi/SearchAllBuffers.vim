@@ -52,6 +52,7 @@ function! SearchAllBuffers#Core(word)
             else
                 call execute(s:orig_buf . "buffer")
             endif
+            redraw!
         endfunction
 
         call delete(s:tmpfile)
@@ -70,6 +71,7 @@ function! SearchAllBuffers#Core(word)
         else
             call execute(s:orig_buf . "buffer")
         endif
+        redraw!
     endif
 endfunction
 
